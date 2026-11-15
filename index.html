@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Golpe no celular — passo a passo</title>
+<meta name="description" content="Guia simples, passo a passo, para limpar e proteger um celular Samsung depois de um golpe com app falso.">
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --card: #ffffff;
+    --ink: #1c1b18;
+    --quiet: #5f5d57;
+    --edge: #a9a69c;
+    --grid: #dedbd2;
+    --accent: #1f5fd1;
+    --accent-tint: #e6eefc;
+    --good: #1e7a3c;
+    --good-tint: #e4f3e8;
+    --warn: #9a5b00;
+    --warn-tint: #fdf1dc;
+    --radius: 18px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614;
+      --card: #22211e;
+      --ink: #f2f0ea;
+      --quiet: #b3b0a6;
+      --edge: #77746b;
+      --grid: #3d3b36;
+      --accent: #6b9cf5;
+      --accent-tint: #1e2b45;
+      --good: #6fd08f;
+      --good-tint: #1c3325;
+      --warn: #f0b552;
+      --warn-tint: #3a2c14;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 20px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--bg);
+    border-bottom: 1px solid var(--grid);
+  }
+  .bar {
+    max-width: 760px; margin: 0 auto;
+    padding: 12px 20px 10px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .bar h1 { font-size: 18px; margin: 0; flex: 1; font-weight: 650; }
+  .bar button {
+    font: inherit; font-size: 16px;
+    background: none; border: 1px solid var(--edge); color: var(--ink);
+    border-radius: 999px; padding: 8px 14px; cursor: pointer;
+  }
+  .progress { height: 6px; background: var(--grid); }
+  .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 20px 140px; }
+  .count { color: var(--quiet); font-size: 17px; margin: 4px 0 6px; font-weight: 600; letter-spacing: .02em; }
+  h2 { font-size: 30px; line-height: 1.2; margin: 0 0 14px; }
+  p { margin: 0 0 16px; }
+  b { font-weight: 700; }
+  .box {
+    border-radius: 14px; padding: 14px 16px; margin: 0 0 18px;
+    background: var(--accent-tint);
+  }
+  .box.warn { background: var(--warn-tint); }
+  .box.good { background: var(--good-tint); }
+  .box strong { display: block; margin-bottom: 2px; }
+  ul.checks { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 12px; }
+  ul.checks label {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--card); border: 2px solid var(--grid);
+    border-radius: var(--radius); padding: 16px; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  ul.checks input { position: absolute; opacity: 0; pointer-events: none; }
+  .tick {
+    flex: none; width: 34px; height: 34px; border-radius: 10px;
+    border: 2px solid var(--edge); display: grid; place-items: center;
+    margin-top: 1px; background: var(--card);
+  }
+  .tick svg { width: 22px; height: 22px; opacity: 0; }
+  .num { font-weight: 700; color: var(--quiet); margin-right: 4px; }
+  ul.checks input:checked + label { border-color: var(--good); background: var(--good-tint); }
+  ul.checks input:checked + label .tick { background: var(--good); border-color: var(--good); }
+  ul.checks input:checked + label .tick svg { opacity: 1; }
+  ul.checks input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
+  figure { margin: 6px 0 22px; background: var(--card); border-radius: var(--radius); padding: 10px; border: 1px solid var(--grid); }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption { font-size: 16px; color: var(--quiet); padding: 6px 6px 2px; }
+  .choices { display: grid; gap: 12px; margin: 0 0 22px; }
+  .choice {
+    font: inherit; text-align: left; cursor: pointer;
+    background: var(--card); color: var(--ink);
+    border: 2px solid var(--grid); border-radius: var(--radius);
+    padding: 18px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .choice[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); }
+  .choice small { color: var(--quiet); font-size: 16px; display: block; }
+  nav.foot {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    background: var(--bg); border-top: 1px solid var(--grid);
+  }
+  nav.foot .in { max-width: 760px; margin: 0 auto; padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); display: flex; gap: 12px; }
+  nav.foot button {
+    font: inherit; font-weight: 700; border-radius: 16px; padding: 16px 18px; min-height: 60px; cursor: pointer;
+  }
+  #back { background: var(--card); color: var(--ink); border: 2px solid var(--edge); flex: 0 0 auto; }
+  #next { background: var(--accent); color: #fff; border: 2px solid var(--accent); flex: 1; }
+  #next.soft { background: var(--card); color: var(--accent); }
+  button:disabled { opacity: .35; cursor: default; }
+  .hint { text-align: center; color: var(--quiet); font-size: 16px; margin-top: -4px; }
+  /* step list */
+  dialog {
+    border: none; border-radius: 22px; padding: 0; width: min(560px, calc(100% - 24px));
+    background: var(--card); color: var(--ink);
+  }
+  dialog::backdrop { background: rgba(0,0,0,.45); }
+  dialog .dh { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px 8px; }
+  dialog h3 { margin: 0; font-size: 22px; }
+  dialog ol { list-style: none; margin: 0; padding: 8px 12px 16px; }
+  dialog li button {
+    width: 100%; text-align: left; font: inherit; color: var(--ink);
+    background: none; border: none; border-radius: 12px; padding: 12px; cursor: pointer;
+    display: flex; gap: 12px; align-items: center;
+  }
+  dialog li button:hover, dialog li button[aria-current="step"] { background: var(--accent-tint); }
+  .dot { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; font-weight: 700; border: 2px solid var(--edge); }
+  .dot.done { background: var(--good); border-color: var(--good); color: #fff; }
+  .close { font: inherit; font-size: 16px; background: none; border: 1px solid var(--edge); color: var(--ink); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+  .reset { display: block; margin: 0 20px 18px; font: inherit; font-size: 15px; color: var(--quiet); background: none; border: none; text-decoration: underline; cursor: pointer; }
+  .rule {
+    border: 3px solid var(--accent); border-radius: 22px; padding: 22px; margin: 6px 0 22px; background: var(--card);
+  }
+  .rule p:first-child { font-size: 24px; font-weight: 750; line-height: 1.3; }
+  .rule p:last-child { margin: 0; }
+  @media (max-width: 480px) {
+    body { font-size: 19px; }
+    h2 { font-size: 26px; }
+    figure { padding: 4px; }
+  }
+  @media print {
+    header, nav.foot { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>Golpe no celular — passo a passo</h1>
+    <button id="openList" type="button" aria-haspopup="dialog">Ver passos</button>
+  </div>
+  <div class="progress" aria-hidden="true"><div id="prog"></div></div>
+</header>
+
+<main id="main" tabindex="-1" aria-live="polite"></main>
+
+<nav class="foot" aria-label="Navegação">
+  <div class="in">
+    <button id="back" type="button">← Voltar</button>
+    <button id="next" type="button">Próximo →</button>
+  </div>
+</nav>
+
+<dialog id="list" aria-labelledby="listTitle">
+  <div class="dh">
+    <h3 id="listTitle">Todos os passos</h3>
+    <button class="close" type="button" id="closeList">Fechar</button>
+  </div>
+  <ol id="listItems"></ol>
+  <button class="reset" type="button" id="resetAll">Recomeçar do zero (apaga as marcações)</button>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- drawings ---------- */
+  var C = { ink: 'var(--ink)', quiet: 'var(--quiet)', edge: 'var(--edge)', grid: 'var(--grid)', accent: 'var(--accent)', tint: 'var(--accent-tint)' };
+
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function svgOpen(h, label) {
+    return '<svg viewBox="0 0 760 ' + h + '" role="img" aria-label="' + esc(label) + '" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="13">' +
+      '<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="' + C.edge + '"/></marker></defs>';
+  }
+
+  function narrow() { return window.matchMedia('(max-width: 600px)').matches; }
+
+  function quickPanelNarrow() {
+    var tile = function (x, y, on) {
+      return '<rect x="' + x + '" y="' + y + '" width="96" height="70" rx="14" fill="' + (on ? C.tint : 'none') + '" stroke="' + (on ? C.accent : C.grid) + '" stroke-width="' + (on ? 2.5 : 1.25) + '"/>';
+    };
+    return '<svg viewBox="0 0 280 300" role="img" aria-label="Puxe a tela para baixo e desligue Wi-Fi e Dados móveis" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="15">' +
+      '<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="' + C.edge + '"/></marker></defs>' +
+      '<rect x="24" y="12" width="232" height="276" rx="24" fill="none" stroke="' + C.edge + '" stroke-width="1.25"/>' +
+      '<line x1="120" y1="26" x2="160" y2="26" stroke="' + C.grid + '" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M140 40V74" fill="none" stroke="' + C.edge + '" stroke-width="1.75" marker-end="url(#arr)"/>' +
+      '<text x="152" y="62" font-size="13" fill="' + C.quiet + '">puxe</text>' +
+      tile(36, 90, true) + tile(148, 90, true) + tile(36, 176, false) + tile(148, 176, false) +
+      '<text x="84" y="131" text-anchor="middle" font-weight="700" fill="' + C.ink + '">Wi-Fi</text>' +
+      '<text text-anchor="middle" font-weight="700" fill="' + C.ink + '"><tspan x="196" y="122">Dados</tspan><tspan x="196" y="141">móveis</tspan></text>' +
+      '</svg>';
+  }
+
+  function quickPanel() {
+    if (narrow()) return quickPanelNarrow();
+    var tile = function (x, y, on) {
+      return '<rect x="' + x + '" y="' + y + '" width="88" height="64" rx="14" fill="' + (on ? C.tint : 'none') + '" stroke="' + (on ? C.accent : C.grid) + '" stroke-width="' + (on ? 2.5 : 1.25) + '"/>';
+    };
+    var badge = function (cy, n) {
+      return '<circle cx="346" cy="' + cy + '" r="14" fill="' + C.tint + '" stroke="' + C.accent + '" stroke-width="1.5"/>' +
+        '<text x="346" y="' + (cy + 5) + '" text-anchor="middle" font-weight="700" fill="' + C.ink + '">' + n + '</text>';
+    };
+    return svgOpen(320, 'Puxe a tela para baixo e desligue Wi-Fi e Dados móveis') +
+      '<rect x="64" y="40" width="220" height="254" rx="22" fill="none" stroke="' + C.edge + '" stroke-width="1.25"/>' +
+      '<line x1="154" y1="52" x2="194" y2="52" stroke="' + C.grid + '" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M174 64V94" fill="none" stroke="' + C.edge + '" stroke-width="1.5" marker-end="url(#arr)"/>' +
+      tile(80, 108, true) + tile(180, 108, true) + tile(80, 184, false) + tile(180, 184, false) +
+      '<text x="124" y="145" text-anchor="middle" font-weight="700" font-size="14" fill="' + C.ink + '">Wi-Fi</text>' +
+      '<text text-anchor="middle" font-weight="700" font-size="14" fill="' + C.ink + '"><tspan x="224" y="136">Dados</tspan><tspan x="224" y="154">móveis</tspan></text>' +
+      '<g fill="none" stroke="' + C.edge + '" stroke-dasharray="4 4"><path d="M331 78H190"/><path d="M331 146H272"/></g>' +
+      badge(78, 1) + '<text fill="' + C.ink + '" font-size="15"><tspan x="372" y="73">Com o dedo, puxe a tela de cima</tspan><tspan x="372" y="93">para baixo.</tspan></text>' +
+      badge(146, 2) + '<text fill="' + C.ink + '" font-size="15"><tspan x="372" y="141">Toque em Wi-Fi e em Dados móveis.</tspan><tspan x="372" y="161">Desligados, os botões ficam apagados.</tspan></text>' +
+      '<text x="346" y="222" font-size="13" fill="' + C.quiet + '"><tspan x="346">Se aparecer só uma fileira de botões,</tspan><tspan x="346" dy="18">puxe mais uma vez.</tspan></text>' +
+      '</svg>';
+  }
+
+  /* A row of phone screens; the item to tap is blue. */
+  /* Phone layout: screens stacked top to bottom, one per row, bigger text. */
+  function stripNarrow(cfg) {
+    var n = cfg.phones.length, W = 280, x = 52, PH = 214, GAP = 40, cx = x + W / 2;
+    var H = n * PH + (n - 1) * GAP + 24;
+    var out = '<svg viewBox="0 0 352 ' + H + '" role="img" aria-label="' + esc(cfg.title) + '" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="15">' +
+      '<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="' + C.edge + '"/></marker></defs>';
+    cfg.phones.forEach(function (p, i) {
+      var y = 12 + i * (PH + GAP);
+      out += '<circle cx="24" cy="' + (y + 22) + '" r="15" fill="' + C.tint + '" stroke="' + C.accent + '" stroke-width="1.5"/>' +
+        '<text x="24" y="' + (y + 27) + '" text-anchor="middle" font-weight="700" font-size="15" fill="' + C.ink + '">' + (i + 1) + '</text>';
+      out += '<rect x="' + x + '" y="' + y + '" width="' + W + '" height="' + PH + '" rx="20" fill="none" stroke="' + C.edge + '" stroke-width="1.25"/>';
+      if (p.dots) {
+        out += '<text x="' + (x + 18) + '" y="' + (y + 30) + '" font-size="16" font-weight="700" fill="' + C.ink + '">' + esc(p.h) + '</text>' +
+          '<rect x="' + (x + W - 52) + '" y="' + (y + 8) + '" width="36" height="34" rx="9" fill="' + C.tint + '" stroke="' + C.accent + '" stroke-width="2.5"/>' +
+          '<text x="' + (x + W - 34) + '" y="' + (y + 33) + '" text-anchor="middle" font-size="22" font-weight="700" fill="' + C.ink + '">⋮</text>';
+      } else {
+        out += '<text x="' + cx + '" y="' + (y + 30) + '" text-anchor="middle" font-size="16" font-weight="700" fill="' + C.ink + '">' + esc(p.h) + '</text>';
+      }
+      [0, 1, 2, 3].forEach(function (r) {
+        if (p.skip && p.skip.indexOf(r) > -1) return;
+        var ry = y + 50 + r * 40, lab = p.rows && p.rows[r], on = !!lab;
+        out += '<rect x="' + (x + 14) + '" y="' + ry + '" width="' + (W - 28) + '" height="32" rx="8" fill="' + (on ? C.tint : 'none') + '" stroke="' + (on ? C.accent : C.grid) + '" stroke-width="' + (on ? 2.5 : 1.25) + '"/>';
+        if (!on) return;
+        var text = Array.isArray(lab) ? lab.join(' ') : lab;
+        if (p.toggles) {
+          out += '<text x="' + (x + 28) + '" y="' + (ry + 21) + '" font-size="15" font-weight="700" fill="' + C.ink + '">' + esc(text) + '</text>' +
+            '<rect x="' + (x + W - 70) + '" y="' + (ry + 6) + '" width="38" height="20" rx="10" fill="' + C.accent + '"/>' +
+            '<circle cx="' + (x + W - 42) + '" cy="' + (ry + 16) + '" r="7" fill="#fff"/>';
+        } else {
+          out += '<text x="' + cx + '" y="' + (ry + 21) + '" text-anchor="middle" font-size="15" font-weight="700" fill="' + C.ink + '">' + esc(text) + '</text>';
+        }
+      });
+      if (i < n - 1) {
+        out += '<path d="M' + cx + ' ' + (y + PH + 6) + 'V' + (y + PH + GAP - 6) + '" fill="none" stroke="' + C.edge + '" stroke-width="1.75" marker-end="url(#arr)"/>';
+      }
+    });
+    return out + '</svg>';
+  }
+
+  function strip(cfg) {
+    if (narrow()) return stripNarrow(cfg);
+    var n = cfg.phones.length, W = cfg.w, gap = (712 - n * W) / (n - 1);
+    var ys = 14, PH = 250, R = [ys + 56, ys + 100, ys + 144, ys + 188];
+    var out = svgOpen(312, cfg.title);
+    cfg.phones.forEach(function (p, i) {
+      var x = 24 + i * (W + gap), cx = x + W / 2;
+      out += '<rect x="' + x + '" y="' + ys + '" width="' + W + '" height="' + PH + '" rx="20" fill="none" stroke="' + C.edge + '" stroke-width="1.25"/>';
+      if (p.dots) {
+        out += '<text x="' + (x + 16) + '" y="' + (ys + 34) + '" font-size="13" font-weight="700" fill="' + C.ink + '">' + esc(p.h) + '</text>' +
+          '<rect x="' + (x + W - 48) + '" y="' + (ys + 14) + '" width="32" height="32" rx="8" fill="' + C.tint + '" stroke="' + C.accent + '" stroke-width="2.5"/>' +
+          '<text x="' + (x + W - 32) + '" y="' + (ys + 37) + '" text-anchor="middle" font-size="20" font-weight="700" fill="' + C.ink + '">⋮</text>';
+      } else {
+        out += '<text x="' + cx + '" y="' + (ys + 34) + '" text-anchor="middle" font-size="' + (p.h.length > 17 ? 12 : 13) + '" font-weight="700" fill="' + C.ink + '">' + esc(p.h) + '</text>';
+      }
+      R.forEach(function (ry, r) {
+        if (p.skip && p.skip.indexOf(r) > -1) return;
+        var lab = p.rows && p.rows[r];
+        var on = !!lab;
+        out += '<rect x="' + (x + 12) + '" y="' + ry + '" width="' + (W - 24) + '" height="34" rx="8" fill="' + (on ? C.tint : 'none') + '" stroke="' + (on ? C.accent : C.grid) + '" stroke-width="' + (on ? 2.5 : 1.25) + '"/>';
+        if (!on) return;
+        if (p.toggles) {
+          out += '<text x="' + (x + 24) + '" y="' + (ry + 21) + '" font-size="12" font-weight="700" fill="' + C.ink + '">' + esc(lab) + '</text>' +
+            '<rect x="' + (x + W - 64) + '" y="' + (ry + 7) + '" width="36" height="20" rx="10" fill="' + C.accent + '"/>' +
+            '<circle cx="' + (x + W - 38) + '" cy="' + (ry + 17) + '" r="7" fill="#fff"/>';
+        } else if (Array.isArray(lab)) {
+          out += '<text text-anchor="middle" font-size="12" font-weight="700" fill="' + C.ink + '"><tspan x="' + cx + '" y="' + (ry + 14) + '">' + esc(lab[0]) + '</tspan><tspan x="' + cx + '" y="' + (ry + 28) + '">' + esc(lab[1]) + '</tspan></text>';
+        } else {
+          out += '<text x="' + cx + '" y="' + (ry + 21) + '" text-anchor="middle" font-size="' + (lab.length > 17 ? 11.5 : 12.5) + '" font-weight="700" fill="' + C.ink + '">' + esc(lab) + '</text>';
+        }
+      });
+      out += '<circle cx="' + cx + '" cy="' + (ys + PH + 26) + '" r="14" fill="' + C.tint + '" stroke="' + C.accent + '" stroke-width="1.5"/>' +
+        '<text x="' + cx + '" y="' + (ys + PH + 31) + '" text-anchor="middle" font-weight="700" font-size="14" fill="' + C.ink + '">' + (i + 1) + '</text>';
+      if (i < n - 1) {
+        out += '<path d="M' + (x + W + 4) + ' ' + (ys + PH / 2) + 'H' + (x + W + gap - 4) + '" fill="none" stroke="' + C.edge + '" stroke-width="1.5" marker-end="url(#arr)"/>';
+      }
+    });
+    return out + '</svg>';
+  }
+
+  var FIG = {
+    quick: function () { return quickPanel(); },
+    whatsapp: function () {
+      return strip({ w: 160, title: 'WhatsApp: toque no item azul de cada tela, na ordem',
+                phones: [
+          { h: 'WhatsApp', dots: true, rows: [] },
+          { h: 'Menu', rows: { 3: 'Configurações' } },
+          { h: 'Configurações', rows: { 2: 'Conversas' } },
+          { h: 'Conversas', rows: { 3: 'Backup de conversas' } }
+        ] });
+    },
+    reset: function () {
+      return strip({ w: 160, title: 'Apagar tudo do celular: toque no item azul de cada tela',
+                phones: [
+          { h: 'Configurações', rows: { 3: 'Gerenciamento geral' } },
+          { h: 'Gerenciamento geral', rows: { 3: 'Restaurar' } },
+          { h: 'Restaurar', rows: { 2: ['Restaurar padrão', 'de fábrica'] } },
+          { h: 'Confirmar', skip: [2], rows: { 3: 'Redefinir' } }
+        ] });
+    },
+    blocker: function () {
+      return strip({ w: 216, title: 'Galaxy A56: ligue o Bloqueador automático',
+                phones: [
+          { h: 'Configurações', rows: { 3: 'Segurança e privacidade' } },
+          { h: 'Segurança e privacidade', rows: { 1: 'Bloqueador automático' } },
+          { h: 'Bloqueador automático', toggles: true, rows: { 0: 'Ativado', 1: 'Restrições máximas' } }
+        ] });
+    }
+  };
+
+  /* ---------- content ---------- */
+  var STEPS = [
+    {
+      t: 'Desligar a internet do celular',
+      lead: 'Isso tira o golpista do celular. Faça agora, antes de tudo.',
+      items: [
+        'Puxe a barra de cima da tela para baixo.',
+        'Desligue o <b>Wi-Fi</b> e os <b>Dados móveis</b>.'
+      ],
+      fig: 'quick', cap: 'Puxe a tela para baixo e toque nos dois botões azuis. Se aparecer só uma fileira de botões, puxe mais uma vez.'
+    },
+    {
+      t: 'Apagar o app falso',
+      lead: 'No celular, ainda sem internet:',
+      items: [
+        'Abra <b>Configurações</b> → <b>Acessibilidade</b> → <b>Aplicativos instalados</b>. Se aparecer o app "Giga+ Fibra" ou outro que você não conhece, toque nele e <b>desligue</b>.',
+        'Abra <b>Configurações</b> → <b>Aplicativos</b>. Encontre o app falso, toque nele e depois em <b>Desinstalar</b>.',
+        'Desinstale também qualquer app chamado <b>AnyDesk</b>, <b>TeamViewer</b>, <b>RustDesk</b> ou <b>AirDroid</b>.'
+      ]
+    },
+    {
+      t: 'Trocar a senha do Google',
+      box: { kind: 'warn', title: 'Faça este passo em outro celular.', text: 'Use o celular de um filho ou de outra pessoa da família.' },
+      items: [
+        'Entre em <b>myaccount.google.com</b> com a conta da mãe.',
+        'Troque a <b>senha</b>. Guarde a senha nova: ela vai ser pedida no passo 6.',
+        'Em <b>Segurança</b> → <b>Seus dispositivos</b>, toque em <b>Sair</b> em todos os aparelhos que não são dela.'
+      ]
+    },
+    {
+      t: 'Salvar as conversas do WhatsApp',
+      lead: 'Agora ligue <b>só o Wi-Fi de casa</b>.',
+      items: [
+        'Abra o WhatsApp → <b>3 pontinhos</b> → <b>Configurações</b> → <b>Conversas</b> → <b>Backup de conversas</b>.',
+        'Toque em <b>FAZER BACKUP</b>. Espere chegar a 100%.'
+      ],
+      after: 'Isso salva <b>todas</b> as conversas, fotos e áudios na conta Google dela.',
+      fig: 'whatsapp', cap: 'Toque no item azul de cada tela, na ordem dos números. Na tela 4, toque no botão verde <b>FAZER BACKUP</b> e espere chegar a 100%.'
+    },
+    {
+      t: 'Salvar os contatos',
+      lead: 'Nos celulares Samsung, os contatos às vezes ficam guardados só no aparelho. Isto leva todos para a conta Google.',
+      items: [
+        'Abra o app <b>Contatos</b> → toque nos <b>3 risquinhos (☰)</b> → <b>Gerenciar contatos</b> → <b>Mover contatos</b>.',
+        'Escolha <b>Telefone</b>, marque todos os contatos e mande para a <b>conta Google</b> → <b>Mover</b>.',
+        'Volte em <b>Gerenciar contatos</b> → <b>Sincronizar contatos</b> → <b>Sincronizar</b>.'
+      ]
+    },
+    {
+      t: 'Apagar tudo do celular',
+      lead: 'Isso garante que não sobrou nenhum programa do golpista.',
+      box: { kind: 'warn', title: 'Antes de começar:', text: 'confira se o backup do WhatsApp (passo 4) chegou a 100% e se os contatos foram para a conta Google (passo 5). Tudo que não foi salvo será apagado.' },
+      items: [
+        '<b>Configurações</b> → <b>Gerenciamento geral</b> → <b>Restaurar</b> → <b>Restaurar padrão de fábrica</b> → <b>Redefinir</b>.',
+        'Digite a senha de desbloqueio do celular e toque em <b>Apagar tudo</b>.',
+        'O celular vai reiniciar como se fosse novo. Ele vai pedir a conta Google: use a <b>senha nova</b> do passo 3.'
+      ],
+      fig: 'reset', cap: 'Toque no item azul de cada tela, na ordem dos números. Depois de <b>Redefinir</b>, digite a senha do celular e toque em <b>Apagar tudo</b>.'
+    },
+    {
+      t: 'Configurar o celular de novo',
+      items: [
+        'Entre com a conta Google, usando a <b>senha nova</b>.',
+        'Baixe o <b>WhatsApp</b> pela <b>Play Store</b> e toque em <b>Restaurar</b> quando ele perguntar. As conversas voltam.',
+        'Baixe os apps dos bancos <b>somente pela Play Store</b>.'
+      ]
+    },
+    {
+      t: 'Proteger o WhatsApp',
+      items: [
+        'WhatsApp → <b>Configurações</b> → <b>Conta</b> → <b>Confirmação em duas etapas</b> → crie uma senha de 6 números.',
+        'WhatsApp → <b>Configurações</b> → <b>Aparelhos conectados</b>. Não pode ter nada ali.'
+      ]
+    },
+    {
+      t: 'Ligar a proteção da Samsung',
+      lead: 'Isso impede que alguém consiga instalar um app falso de novo.',
+      byPhone: {
+        A56: {
+          label: 'No Galaxy A56',
+          items: [
+            '<b>Configurações</b> → <b>Segurança e privacidade</b> → <b>Bloqueador automático</b>.',
+            'Deixe <b>ativado</b>. Se a opção <b>Restrições máximas</b> aparecer, ative também.'
+          ],
+          fig: 'blocker', cap: 'Toque no item azul de cada tela, na ordem dos números. Ligado, o botão fica azul com a bolinha do lado direito.'
+        },
+        S20: {
+          label: 'No Galaxy S20 (ele não tem o Bloqueador automático)',
+          items: [
+            '<b>Configurações</b> → <b>Aplicativos</b> → <b>3 pontinhos</b> → <b>Acesso especial</b> → <b>Instalar apps desconhecidos</b>.',
+            'Todos os apps da lista têm que estar <b>desligados</b>, principalmente o <b>WhatsApp</b>, o <b>Chrome</b> e o <b>Meus Arquivos</b>.'
+          ]
+        }
+      }
+    }
+  ];
+
+  var TOTAL = STEPS.length; // screens: 0 = start, 1..TOTAL = steps, TOTAL+1 = end
+
+  /* ---------- state ---------- */
+  var KEY = 'guia-golpe-celular-v1';
+  var state = { i: 0, phone: null, done: {} };
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved && typeof saved.i === 'number') state = saved;
+  } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  /* ---------- rendering ---------- */
+  var main = document.getElementById('main');
+  var back = document.getElementById('back');
+  var next = document.getElementById('next');
+  var prog = document.getElementById('prog');
+  var TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  function itemsFor(s) {
+    if (!s.byPhone) return [{ items: s.items, fig: s.fig, cap: s.cap }];
+    var keys = state.phone === 'A56' ? ['A56'] : state.phone === 'S20' ? ['S20'] : ['A56', 'S20'];
+    return keys.map(function (k) { var v = s.byPhone[k]; return { key: k, label: v.label, items: v.items, fig: v.fig, cap: v.cap }; });
+  }
+
+  function checkList(stepIdx, groupKey, items) {
+    var html = '<ul class="checks">';
+    items.forEach(function (txt, j) {
+      var id = 's' + stepIdx + '-' + (groupKey || 'x') + '-' + j;
+      var on = !!state.done[id];
+      html += '<li><input type="checkbox" id="' + id + '"' + (on ? ' checked' : '') + '>' +
+        '<label for="' + id + '"><span class="tick">' + TICK + '</span><span><span class="num">' + (j + 1) + '.</span> ' + txt + '</span></label></li>';
+    });
+    return html + '</ul>';
+  }
+
+  function stepIds(stepIdx) {
+    var s = STEPS[stepIdx - 1], ids = [];
+    itemsFor(s).forEach(function (g) { g.items.forEach(function (_, j) { ids.push('s' + stepIdx + '-' + (g.key || 'x') + '-' + j); }); });
+    return ids;
+  }
+  function stepDone(stepIdx) { return stepIds(stepIdx).every(function (id) { return state.done[id]; }); }
+
+  function renderStart() {
+    var ph = state.phone;
+    var opt = function (k, title, sub) {
+      return '<button type="button" class="choice" data-phone="' + k + '" aria-pressed="' + (ph === k) + '"><span>' + title + (sub ? '<small>' + sub + '</small>' : '') + '</span><span aria-hidden="true">' + (ph === k ? '✓' : '') + '</span></button>';
+    };
+    return '<p class="count">Antes de começar</p>' +
+      '<h2>Vamos limpar e proteger o celular, um passo de cada vez</h2>' +
+      '<p>São ' + TOTAL + ' passos. Em cada um, faça o que está escrito e toque no quadrado para marcar como feito. Depois toque em <b>Próximo</b>.</p>' +
+      '<div class="box warn"><strong>Abra este guia em outro aparelho.</strong>Um computador ou o celular de outra pessoa. O celular dela vai ficar sem internet e, no passo 6, vai ser apagado.</div>' +
+      '<p><b>Em qual celular o app falso foi instalado?</b></p>' +
+      '<div class="choices">' +
+      opt('S20', 'Galaxy S20', '') +
+      opt('A56', 'Galaxy A56', '') +
+      opt('?', 'Não sei', 'Mostro o caminho dos dois celulares') +
+      '</div>';
+  }
+
+  function renderStep(n) {
+    var s = STEPS[n - 1];
+    var html = '<p class="count">Passo ' + n + ' de ' + TOTAL + '</p><h2>' + s.t + '</h2>';
+    if (s.lead) html += '<p>' + s.lead + '</p>';
+    if (s.box) html += '<div class="box ' + s.box.kind + '"><strong>' + s.box.title + '</strong>' + s.box.text + '</div>';
+    itemsFor(s).forEach(function (g) {
+      if (g.label) html += '<p><b>' + g.label + ':</b></p>';
+      html += checkList(n, g.key, g.items);
+      if (g.fig) html += '<figure>' + FIG[g.fig]() + '<figcaption>' + g.cap + '</figcaption></figure>';
+    });
+    if (s.after) html += '<div class="box good">' + s.after + '</div>';
+    return html;
+  }
+
+  function renderEnd() {
+    var missing = [];
+    for (var k = 1; k <= TOTAL; k++) if (!stepDone(k)) missing.push(k);
+    var html = '<p class="count">Fim</p><h2>' + (missing.length ? 'Quase lá' : 'Pronto! O celular está limpo e protegido') + '</h2>';
+    if (missing.length) {
+      html += '<div class="box warn"><strong>Faltam itens para marcar.</strong>Passo ' + missing.join(', ') + '. Toque em <b>Ver passos</b> para voltar a eles.</div>';
+    }
+    html += '<div class="rule"><p>Nenhuma empresa manda instalar aplicativo pelo WhatsApp.</p>' +
+      '<p>Se alguém ligar dizendo que é do banco, da internet ou do governo: <b>desligue e ligue para um filho antes de fazer qualquer coisa.</b></p></div>';
+    return html;
+  }
+
+  function render(focus) {
+    var i = state.i;
+    if (i === 0) main.innerHTML = renderStart();
+    else if (i <= TOTAL) main.innerHTML = renderStep(i);
+    else main.innerHTML = renderEnd();
+
+    prog.style.width = Math.round(Math.min(i, TOTAL) / TOTAL * 100) + '%';
+    back.disabled = i === 0;
+    next.hidden = i > TOTAL;
+    back.style.flex = i > TOTAL ? '1' : '';
+    if (i === 0) {
+      next.textContent = state.phone ? 'Começar →' : 'Escolha o celular acima';
+      next.disabled = !state.phone;
+      next.classList.remove('soft');
+    } else if (i <= TOTAL) {
+      next.disabled = false;
+      next.textContent = i === TOTAL ? 'Terminar →' : 'Próximo passo →';
+      next.classList.toggle('soft', !stepDone(i));
+    }
+    if (focus) { main.focus({ preventScroll: true }); window.scrollTo(0, 0); }
+    save();
+  }
+
+  main.addEventListener('change', function (e) {
+    if (e.target.type !== 'checkbox') return;
+    if (e.target.checked) state.done[e.target.id] = true; else delete state.done[e.target.id];
+    render(false);
+    var el = document.getElementById(e.target.id); if (el) el.focus();
+  });
+  main.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-phone]');
+    if (!b) return;
+    state.phone = b.getAttribute('data-phone');
+    render(false);
+  });
+  back.addEventListener('click', function () { if (state.i > 0) { state.i--; render(true); } });
+  next.addEventListener('click', function () { if (state.i <= TOTAL) { state.i++; render(true); } });
+
+  /* step list */
+  var dlg = document.getElementById('list');
+  var listItems = document.getElementById('listItems');
+  function openList() {
+    var html = '<li><button type="button" data-go="0"' + (state.i === 0 ? ' aria-current="step"' : '') + '><span class="dot">▶</span>Início: escolher o celular</button></li>';
+    STEPS.forEach(function (s, k) {
+      var n = k + 1, d = stepDone(n);
+      html += '<li><button type="button" data-go="' + n + '"' + (state.i === n ? ' aria-current="step"' : '') + '><span class="dot' + (d ? ' done' : '') + '">' + (d ? '✓' : n) + '</span>' + s.t + '</button></li>';
+    });
+    html += '<li><button type="button" data-go="' + (TOTAL + 1) + '"' + (state.i === TOTAL + 1 ? ' aria-current="step"' : '') + '><span class="dot">★</span>A regra para nunca mais cair</button></li>';
+    listItems.innerHTML = html;
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  }
+  function closeList() { if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); }
+  document.getElementById('openList').addEventListener('click', openList);
+  document.getElementById('closeList').addEventListener('click', closeList);
+  listItems.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-go]'); if (!b) return;
+    state.i = parseInt(b.getAttribute('data-go'), 10);
+    closeList(); render(true);
+  });
+  document.getElementById('resetAll').addEventListener('click', function () {
+    if (!window.confirm('Apagar todas as marcações e voltar ao começo?')) return;
+    state = { i: 0, phone: null, done: {} };
+    closeList(); render(true);
+  });
+
+  try { window.matchMedia('(max-width: 600px)').addEventListener('change', function () { render(false); }); } catch (e) {}
+  render(false);
+})();
+</script>
+</body>
+</html>
